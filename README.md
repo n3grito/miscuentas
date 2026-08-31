@@ -1,66 +1,120 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+<p align="center"><a href="https://miscuentas.tallerssh.cu" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
 
 <p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
+<a href="https://github.com/TU_USUARIO/miscuentas/actions"><img src="https://github.com/TU_USUARIO/miscuentas/workflows/tests/badge.svg" alt="Build Status"></a>
 <a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
 <a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
 <a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
 </p>
 
-## About Laravel
+## MisCuentas
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+Sistema integral de gestión de inventario, punto de venta (POS) y contabilidad para negocios en Cuba.
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+### Características Principales
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+- **Gestión de Inventario**: Productos con SKU automático, stock por almacén, movimientos, alertas
+- **Punto de Venta (POS)**: Interfaz táctil, cálculo de cambio, alta rápida de clientes
+- **Compras y Ventas**: Registro completo con entrada/salida automática de inventario
+- **Facturación**: Emisión, impresión y cancelación de facturas
+- **Contabilidad**: Cuentas, asientos de partida doble, asientos automáticos
+- **Reportes**: Valoración de inventario, movimientos, resumen operaciones
+- **Multi-usuario**: Roles y permisos granulares por módulo
+- **Auditoría**: Registro completo de actividad del sistema
 
-## Learning Laravel
+### Tecnologías
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+- **Backend**: Laravel 11 + PHP 8.2+
+- **Panel Admin**: Filament v3
+- **Base de Datos**: MySQL 8.0+
+- **Autenticación**: Spatie Permission
+- **Tests**: 91 tests / 303 assertions
 
-You may also try the [Laravel Bootcamp](https://bootcamp.laravel.com), where you will be guided through building a modern Laravel application from scratch.
+### Instalación Rápida
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+```bash
+# Clonar repositorio
+git clone https://github.com/TU_USUARIO/miscuentas.git
+cd miscuentas
 
-## Laravel Sponsors
+# Instalar dependencias
+composer install
+npm install && npm run build
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+# Configurar entorno
+cp .env.example .env
+php artisan key:generate
 
-### Premium Partners
+# Configurar base de datos en .env
+# DB_DATABASE=miscuentas
+# DB_USERNAME=root
+# DB_PASSWORD=
 
-- **[Vehikl](https://vehikl.com/)**
-- **[Tighten Co.](https://tighten.co)**
-- **[WebReinvent](https://webreinvent.com/)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel/)**
-- **[Cyber-Duck](https://cyber-duck.co.uk)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Jump24](https://jump24.co.uk)**
-- **[Redberry](https://redberry.international/laravel/)**
-- **[Active Logic](https://activelogic.com)**
-- **[byte5](https://byte5.de)**
-- **[OP.GG](https://op.gg)**
+# Ejecutar migraciones y seeders
+php artisan migrate
+php artisan db:seed --class=SuperAdminSeeder
 
-## Contributing
+# Iniciar servidor
+php artisan serve
+```
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+### Credenciales por Defecto
 
-## Code of Conduct
+- **Email**: admin@miscuentas.test
+- **Contraseña**: password
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+### Estructura del Proyecto
 
-## Security Vulnerabilities
+```
+miscuentas/
+├── app/
+│   ├── Filament/          # Recursos, páginas, widgets
+│   ├── Models/            # 26 modelos Eloquent
+│   ├── Policies/          # 21 políticas de autorización
+│   ├── Services/          # 6 servicios de negocio
+│   └── Support/           # Clases de soporte
+├── config/                # Configuración
+├── database/              # Migraciones y seeders
+├── public/                # Assets públicos
+├── resources/             # Vistas Blade
+├── routes/                # Rutas
+├── storage/               # Logs, caché, backups
+└── tests/                 # 91 tests feature
+```
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+### Módulos
 
-## License
+| Módulo | Descripción |
+|--------|-------------|
+| **Productos** | Catálogo con SKU automático, categorías, unidades |
+| **Inventario** | Stock por almacén, movimientos, alertas, valoración |
+| **Compras** | Recepción con entrada automática de inventario |
+| **Ventas** | Despacho con salida FIFO y manejo de descuentos |
+| **POS** | Terminal punto de venta con cálculo de cambio |
+| **Facturación** | Emisión, impresión, cancelación desde venta |
+| **Contabilidad** | Cuentas, asientos de partida doble automáticos |
+| **Reportes** | Valoración, movimientos, resumen, balance |
+| **Admin** | Usuarios, roles, permisos, auditoría, ajustes |
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+### Documentación
+
+- [Guía de Despliegue](DEPLOYMENT.md)
+- [Guía de Git](GIT_GUIDE.md)
+
+### Contribuir
+
+Las contribuciones son bienvenidas. Por favor, abra un issue para discutir cambios significativos.
+
+### Licencia
+
+MIT License - Ver [LICENSE](LICENSE) para más detalles.
+
+### Autor
+
+**[Tu Nombre]**
+- Email: [tu@email.com]
+- GitHub: [@tu_usuario](https://github.com/tu_usuario)
+
+### Soporte
+
+Si tienes problemas o preguntas, abre un issue en el repositorio.
