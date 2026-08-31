@@ -111,9 +111,9 @@ MIT License - Ver [LICENSE](LICENSE) para más detalles.
 
 ### Autor
 
-**[Tu Nombre]**
-- Email: [tu@email.com]
-- GitHub: [@tu_usuario](https://github.com/tu_usuario)
+**[Lic. Osniel Galá]**
+- Email: [osnigc@tallerssh.cu]
+- GitHub: [@n3grito](https://github.com/n3grito)
 
 ### Soporte
 
