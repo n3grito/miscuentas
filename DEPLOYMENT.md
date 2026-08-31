@@ -27,36 +27,28 @@ git clone <repo-url> /var/www/miscuentas
 cd /var/www/miscuentas
 ```
 
-### 2. Instalar dependencias
-```bash
-composer install --no-dev --optimize-autoloader
-npm install && npm run build  # solo si compilas assets
-```
+### 2. Configurar entorno ANTES de instalar dependencias
+> IMPORTANTE: Crear `.env` **antes** de `composer install`. El hook `post-autoload-dump`
+> ejecuta `package:discover`, que arranca Laravel y conecta a la base de datos. Si aún no
+> existe `.env`, o si apunta a SQLite sin el archivo, fallará con
+> "Database file at path [.../database.sqlite] does not exist".
 
-### 3. Configurar entorno
 ```bash
 cp .env.production.example .env
 php artisan key:generate
+
+# Editar .env con valores reales:
+#   APP_ENV=production
+#   APP_DEBUG=false
+#   DB_DATABASE=miscuentas
+#   DB_USERNAME=miscuentas_user
+#   DB_PASSWORD=<tu contraseña>
 ```
 
-Editar `.env` con valores reales:
-```env
-APP_ENV=production
-APP_DEBUG=false
-APP_URL=https://mis-cuentas.tallerssh.cu
-
-DB_HOST=127.0.0.1
-DB_PORT=3306
-DB_DATABASE=miscuentas
-DB_USERNAME=miscuentas_user
-DB_PASSWORD=<contraseña_segura>
-
-MAIL_MAILER=smtp
-MAIL_HOST=mail.tallerssh.cu
-MAIL_PORT=587
-MAIL_USERNAME=noreply@tallerssh.cu
-MAIL_PASSWORD=<contraseña>
-MAIL_ENCRYPTION=tls
+### 3. Instalar dependencias
+```bash
+composer install --no-dev --optimize-autoloader
+npm install && npm run build  # solo si compilas assets
 ```
 
 ### 4. Base de datos
