@@ -41,6 +41,9 @@ class AdminPanelProvider extends PanelProvider
             ->widgets([
                 Widgets\AccountWidget::class,
                 \App\Filament\Widgets\StatsOverview::class,
+                \App\Filament\Widgets\SalesChart::class,
+                \App\Filament\Widgets\PurchasesChart::class,
+                \App\Filament\Widgets\TopProductsChart::class,
                 \App\Filament\Widgets\StockAlertsWidget::class,
                 \App\Filament\Widgets\RecentActivity::class,
             ])
