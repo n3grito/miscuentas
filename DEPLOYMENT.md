@@ -23,11 +23,36 @@
 ### 1. Copiar archivos al servidor
 ```bash
 # Desde tu máquina local
-git clone <repo-url> /var/www/miscuentas
-cd /var/www/miscuentas
+git clone <repo-url> /storage/www/html/miscuentas
+cd /storage/www/html/miscuentas
 ```
 
-### 2. Configurar entorno ANTES de instalar dependencias
+### 2. Crear la base de datos en MySQL ANTES de correr cualquier `php artisan`
+> IMPORTANTE: Este paso es obligatorio y debe ir **antes** de `key:generate` o de
+> `composer install`. El panel Filament consulta la tabla `settings` al arrancar
+> CUALQUIER comando `php artisan`. Si la base de datos no existe, fallará con
+> `Unknown database 'miscuentas'`. Crea primero la BD y el usuario.
+
+```bash
+mysql -u root -p
+```
+
+```sql
+CREATE DATABASE miscuentas CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+CREATE USER 'miscuentas_user'@'127.0.0.1' IDENTIFIED BY 'CAMBIAME_por_una_fuerte';
+GRANT ALL PRIVILEGES ON miscuentas.* TO 'miscuentas_user'@'127.0.0.1';
+FLUSH PRIVILEGES;
+EXIT;
+```
+
+> **Collation:** si tu servidor es **MariaDB** (o MySQL < 8), `utf8mb4_0900_ai_ci` no es
+> soportado y Laravel fallará con `Unknown collation: 'utf8mb4_0900_ai_ci'`. La app usa
+> `utf8mb4_unicode_ci` por defecto (compatible con ambos), definido en `config/database.php`
+> y exportado en `.env` como `DB_COLLATION=utf8mb4_unicode_ci`. Solo si tu servidor es
+> **MySQL 8+** puedes usar `utf8mb4_0900_ai_ci`. Aplica el que corresponda tanto a la
+> `CREATE DATABASE` como a `DB_COLLATION` en `.env`.
+
+### 3. Configurar entorno ANTES de instalar dependencias
 > IMPORTANTE: Crear `.env` **antes** de `composer install`. El hook `post-autoload-dump`
 > ejecuta `package:discover`, que arranca Laravel y conecta a la base de datos. Si aún no
 > existe `.env`, o si apunta a SQLite sin el archivo, fallará con
@@ -43,29 +68,31 @@ php artisan key:generate
 #   DB_DATABASE=miscuentas
 #   DB_USERNAME=miscuentas_user
 #   DB_PASSWORD=<tu contraseña>
+#   DB_CHARSET=utf8mb4
+#   DB_COLLATION=utf8mb4_unicode_ci   # compatible MariaDB/MySQL (ver Paso 2)
 ```
 
-### 3. Instalar dependencias
+### 4. Instalar dependencias
 ```bash
 composer install --no-dev --optimize-autoloader
 npm install && npm run build  # solo si compilas assets
 ```
 
-### 4. Base de datos
+### 5. Migrar y sembrar la base de datos
 ```bash
 php artisan migrate --force
 php artisan db:seed --class=SuperAdminSeeder --force
 ```
 
-### 5. Permisos (Linux/Mac)
+### 6. Permisos (Linux/Mac)
 ```bash
-chown -R www-data:www-data /var/www/miscuentas
-chmod -R 755 /var/www/miscuentas
-chmod -R 775 /var/www/miscuentas/storage
-chmod -R 775 /var/www/miscuentas/bootstrap/cache
+chown -R www-data:www-data /storage/www/html/miscuentas
+chmod -R 755 /storage/www/html/miscuentas
+chmod -R 775 /storage/www/html/miscuentas/storage
+chmod -R 775 /storage/www/html/miscuentas/bootstrap/cache
 ```
 
-### 6. Optimizar para producción
+### 7. Optimizar para producción
 ```bash
 php artisan config:cache
 php artisan route:cache
@@ -73,19 +100,19 @@ php artisan view:cache
 php artisan event:cache
 ```
 
-### 7. Configurar Scheduler (cron)
+### 8. Configurar Scheduler (cron)
 Agregar al crontab del servidor:
 ```bash
-* * * * * cd /var/www/miscuentas && php artisan schedule:run >> /dev/null 2>&1
+* * * * * cd /storage/www/html/miscuentas && php artisan schedule:run >> /dev/null 2>&1
 ```
 
-### 8. Configurar Queue Worker (si usas jobs)
+### 9. Configurar Queue Worker (si usas jobs)
 ```bash
 # Como servicio systemd o supervisord
 php artisan queue:work --sleep=3 --tries=3 --max-time=3600
 ```
 
-### 9. Configurar Backup
+### 10. Configurar Backup
 ```bash
 # Crear directorio de backups
 mkdir -p storage/app/backups

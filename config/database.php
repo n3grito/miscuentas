@@ -49,7 +49,11 @@ return [
             'password' => env('DB_PASSWORD', ''),
             'unix_socket' => env('DB_SOCKET', ''),
             'charset' => env('DB_CHARSET', 'utf8mb4'),
-            'collation' => env('DB_COLLATION', 'utf8mb4_0900_ai_ci'),
+            // utf8mb4_unicode_ci funciona tanto en MySQL 5.7/8 como en MariaDB.
+            // (utf8mb4_0900_ai_ci es solo MySQL 8+ y falla en MariaDB con
+            // "Unknown collation: 'utf8mb4_0900_ai_ci'"). Se sobreescribe con
+            // DB_COLLATION si hace falta.
+            'collation' => env('DB_COLLATION', 'utf8mb4_unicode_ci'),
             'prefix' => '',
             'prefix_indexes' => true,
             'strict' => true,
