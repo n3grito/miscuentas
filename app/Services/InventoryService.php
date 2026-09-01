@@ -13,10 +13,8 @@ use App\Models\StockTransfer;
 use App\Services\JournalService;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Str;
 use InvalidArgumentException;
 use RuntimeException;
-use Throwable;
 
 class InventoryService
 {
@@ -489,33 +487,17 @@ class InventoryService
 
     private function lockInventory(int $productId, int $warehouseId): Inventory
     {
-        $inventory = Inventory::where('product_id', $productId)
-            ->where('warehouse_id', $warehouseId)
-            ->lockForUpdate()
-            ->first();
-
-        if ($inventory) {
-            return $inventory;
-        }
-
-        try {
-            Inventory::create([
-                'product_id' => $productId,
-                'warehouse_id' => $warehouseId,
-                'quantity' => 0,
-                'average_cost' => 0,
-            ]);
-        } catch (Throwable $e) {
-            if (Str::contains($e->getMessage(), ['Duplicate entry', 'Integrity constraint'])) {
-                // Creación concurrente: re-bloquea la fila ya existente.
-                return Inventory::where('product_id', $productId)
-                    ->where('warehouse_id', $warehouseId)
-                    ->lockForUpdate()
-                    ->firstOrFail();
-            }
-
-            throw $e;
-        }
+        // INSERT IGNORE: atómico y seguro ante carreras. Si la fila ya existe
+        // (incluso si otro proceso la creó justo antes), no hace nada y evita
+        // el error 1062 "Duplicate entry product_id/warehouse_id".
+        DB::table('inventory')->insertOrIgnore([
+            'product_id' => $productId,
+            'warehouse_id' => $warehouseId,
+            'quantity' => 0,
+            'average_cost' => 0,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
 
         return Inventory::where('product_id', $productId)
             ->where('warehouse_id', $warehouseId)

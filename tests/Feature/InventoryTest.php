@@ -293,4 +293,23 @@ class InventoryTest extends TestCase
         $this->assertEquals(5.0, (float) $inv->quantity);
         $this->assertSame(1, $product->movements()->count());
     }
+
+    public function test_increase_updates_existing_inventory_row_without_duplicate(): void
+    {
+        // Escenario real del servidor: ya existe una fila de inventario
+        // (p.ej. quantity=5000) y llega una nueva entrada para el mismo
+        // producto/almacén. Debe actualizarla, no insertar otra (error 1062).
+        $product = $this->makeProduct();
+        $warehouse = $this->makeWarehouse('WH-'.Str::random(4));
+        $service = app(InventoryService::class);
+
+        $service->increase($product, $warehouse->id, 5000, 3.5, 'initial', reason: 'Apertura');
+        $service->increase($product, $warehouse->id, 200, 4.0, 'purchase', reason: 'Compra');
+
+        $rows = $product->inventory()->where('warehouse_id', $warehouse->id)->get();
+
+        $this->assertSame(1, $rows->count());
+        $this->assertEquals(5200.0, (float) $rows->first()->quantity);
+        $this->assertSame(2, $product->movements()->count());
+    }
 }
