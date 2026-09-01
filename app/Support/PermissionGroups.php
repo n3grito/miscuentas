@@ -10,7 +10,7 @@ class PermissionGroups
     /**
      * Permisos que no derivan de un recurso CRUD (nombre completo, sin prefijo de acción).
      */
-    public const STANDALONE = ['use_pos', 'view_reports', 'view_logs'];
+    public const STANDALONE = ['use_pos', 'view_reports', 'view_logs', 'adjust_inventory'];
 
     public const ACTION_LABELS = [
         'view_any' => 'Ver lista',
@@ -50,6 +50,7 @@ class PermissionGroups
         'use_pos' => 'Operar el punto de venta',
         'view_reports' => 'Consultar reportes',
         'view_logs' => 'Consultar auditoría del sistema',
+        'adjust_inventory' => 'Ajustar stock (entradas y salidas manuales)',
     ];
 
     /**
@@ -64,7 +65,7 @@ class PermissionGroups
             'Clientes y proveedores' => ['third_party'],
             'Monedas' => ['currency'],
             'Productos' => ['category', 'unit', 'product'],
-            'Inventario' => ['warehouse', 'inventory_movement', 'stock_transfer', 'stock_alert'],
+            'Inventario' => ['warehouse', 'inventory_movement', 'stock_transfer', 'stock_alert', 'adjust_inventory'],
             'Producción' => ['bom', 'production'],
             'Compras' => ['purchase'],
             'Ventas' => ['sale'],

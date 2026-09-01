@@ -106,6 +106,7 @@ class SuperAdminSeeder extends Seeder
             'use_pos',
             'view_reports',
             'view_logs',
+            'adjust_inventory',
         ];
 
         $permissions = [];
