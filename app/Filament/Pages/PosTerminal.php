@@ -81,6 +81,8 @@ class PosTerminal extends Page implements HasForms
 
     /**
      * Agrega un producto al carrito validando existencia en el servidor.
+     * Los artículos sin control de inventario (servicios y productos no
+     * inventariables) pueden agregarse sin restricción de existencias.
      */
     public function addToCart(int $productId): void
     {
@@ -88,7 +90,29 @@ class PosTerminal extends Page implements HasForms
             ->firstWhere('id', $productId);
 
         if (! $data) {
-            Notification::make()->title('Producto no disponible en este almacén.')->danger()->send();
+            Notification::make()->title('Artículo no disponible en este almacén.')->danger()->send();
+
+            return;
+        }
+
+        // Los artículos sin inventario no tienen existencias que validar.
+        if (! $data['tracks_inventory']) {
+            foreach ($this->cart as $i => $line) {
+                if ((int) $line['product_id'] === $productId) {
+                    $this->cart[$i]['quantity']++;
+
+                    return;
+                }
+            }
+
+            $this->cart[] = [
+                'product_id' => (int) $data['id'],
+                'name' => $data['name'],
+                'sku' => $data['sku'],
+                'quantity' => 1,
+                'unit_price' => 0,
+                'stock' => null,
+            ];
 
             return;
         }

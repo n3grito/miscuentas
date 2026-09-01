@@ -136,14 +136,15 @@ class PosService
     }
 
     /**
-     * Busca productos para el terminal: por nombre, SKU o código de barras.
+     * Busca artículos para el terminal: por nombre, SKU o código de barras.
+     * Incluye productos (con o sin control de inventario) y servicios; para
+     * los ítems sin inventario el stock se reporta como nulo/0.
      */
     public function searchProducts(int $warehouseId, string $term, int $limit = 12): Collection
     {
         $query = Product::query()
-            ->select(['id', 'name', 'sku', 'barcode', 'min_stock'])
+            ->select(['id', 'name', 'sku', 'barcode', 'min_stock', 'type', 'track_inventory'])
             ->where('is_active', true)
-            ->where('type', 'product')
             ->withSum(['inventory as stock' => fn ($q) => $q->where('warehouse_id', $warehouseId)], 'quantity')
             ->orderBy('name');
 
@@ -160,7 +161,9 @@ class PosService
             'id' => $p->id,
             'name' => $p->name,
             'sku' => $p->sku,
-            'stock' => (float) ($p->stock ?? 0),
+            'type' => $p->type,
+            'tracks_inventory' => $p->tracksInventory(),
+            'stock' => $p->tracksInventory() ? (float) ($p->stock ?? 0) : null,
         ]);
     }
 }

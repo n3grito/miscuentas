@@ -207,14 +207,31 @@ class InventoryService
                 throw new RuntimeException('La venta debe contener al menos un producto.');
             }
 
-            $pairs = $sale->items->map(fn ($item) => [$item->product_id, $sale->warehouse_id])->all();
+            // Los ítems de servicios o sin control de inventario se registran pero
+            // no descuentan ni requieren existencias (módulo Catálogo: venta de servicios).
+            $stockPairs = $sale->items
+                ->filter(fn ($item) => $item->product && $item->product->tracksInventory())
+                ->map(fn ($item) => [$item->product_id, $sale->warehouse_id])
+                ->all();
 
-            $this->lockInventoryRowsInOrder($pairs);
+            $this->lockInventoryRowsInOrder($stockPairs);
 
             $subtotal = 0.0;
             $costTotal = 0.0;
 
             foreach ($sale->items as $item) {
+                $price = round((float) $item->quantity * (float) $item->unit_price, 6);
+
+                if (! $item->product || ! $item->product->tracksInventory()) {
+                    $item->update([
+                        'unit_cost' => 0,
+                        'total_cost' => 0,
+                        'total_price' => $price,
+                    ]);
+                    $subtotal += $price;
+                    continue;
+                }
+
                 $movement = $this->doDecrease(
                     $item->product,
                     $sale->warehouse_id,
@@ -228,10 +245,10 @@ class InventoryService
                 $item->update([
                     'unit_cost' => (float) $movement->unit_cost,
                     'total_cost' => (float) $movement->total_cost,
-                    'total_price' => (float) $item->quantity * (float) $item->unit_price,
+                    'total_price' => $price,
                 ]);
 
-                $subtotal += (float) $item->total_price;
+                $subtotal += $price;
                 $costTotal += (float) $movement->total_cost;
             }
 

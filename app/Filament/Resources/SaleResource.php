@@ -65,11 +65,11 @@ class SaleResource extends Resource
                             ->relationship('items')
                             ->schema([
                                 Forms\Components\Select::make('product_id')
-                                    ->label('Producto')
+                                    ->label('Artículo')
                                     ->relationship(
                                         'product',
                                         'name',
-                                        fn ($query) => $query->where('type', 'product')->where('track_inventory', true),
+                                        fn ($query) => $query->where('is_active', true),
                                     )
                                     ->searchable()
                                     ->preload()

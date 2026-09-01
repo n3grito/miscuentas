@@ -99,6 +99,16 @@ class Product extends Model
             ->sum('quantity');
     }
 
+    /**
+     * Indica si el artículo se controla por existencias (producto físico con
+     * control de inventario). Los servicios y los artículos sin inventario
+     * no participan en el stock ni en los cálculos de costo.
+     */
+    public function tracksInventory(): bool
+    {
+        return $this->type === 'product' && (bool) $this->track_inventory;
+    }
+
     public function getActivitylogOptions(): LogOptions
     {
         return LogOptions::defaults()

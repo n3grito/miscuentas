@@ -44,8 +44,13 @@
                             <div style="font-size:12px;color:#6b7280">SKU {{ $r['sku'] }}</div>
                         </div>
                         <div style="text-align:right;font-size:13px">
-                            <span style="font-weight:800">{{ number_format($r['stock'], 2) }}</span><br>
-                            <span style="color:#6b7280">en stock</span>
+                            @if ($r['tracks_inventory'])
+                                <span style="font-weight:800">{{ number_format($r['stock'] ?? 0, 2) }}</span><br>
+                                <span style="color:#6b7280">en stock</span>
+                            @else
+                                <span style="font-weight:800;color:#16a34a">{{ $r['type'] === 'service' ? 'Servicio' : 'Sin stock' }}</span><br>
+                                <span style="color:#6b7280">no lleva inventario</span>
+                            @endif
                         </div>
                     </div>
                 @empty
@@ -92,11 +97,16 @@
                             <tr wire:key="c-{{ $line['product_id'] }}">
                                 <td>
                                     <div style="font-weight:600">{{ $line['name'] }}</div>
-                                    <div style="font-size:11px;color:#6b7280">{{ $line['sku'] }} · máx {{ $line['stock'] }}</div>
+                                    <div style="font-size:11px;color:#6b7280">{{ $line['sku'] }} · {{ $line['stock'] === null ? 'sin stock' : 'máx ' . $line['stock'] }}</div>
                                 </td>
                                 <td>
-                                    <input type="number" class="qty-input" min="1" max="{{ $line['stock'] }}" step="1"
-                                        wire:model.live.debounce.250ms="cart.{{ $i }}.quantity">
+                                    @if ($line['stock'] === null)
+                                        <input type="number" class="qty-input" min="0.0001" step="0.0001"
+                                            wire:model.live.debounce.250ms="cart.{{ $i }}.quantity">
+                                    @else
+                                        <input type="number" class="qty-input" min="1" max="{{ $line['stock'] }}" step="1"
+                                            wire:model.live.debounce.250ms="cart.{{ $i }}.quantity">
+                                    @endif
                                 </td>
                                 <td>
                                     <input type="number" class="price-input" min="0" step="0.01"
