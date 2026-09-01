@@ -36,12 +36,16 @@
     <nav class="nav">
         <a class="brand" href="/">{{ $appName }}</a>
         <div>
+            @php
+                $homePanel = auth()->user()?->hasRole('SuperAdmin') ? '/admin' : '/panel';
+                $posUrl = $homePanel === '/admin' ? '/admin/pos' : '/panel/pos';
+            @endphp
             @auth
-                <a class="btn btn-primary" href="/admin">Ir al panel</a>
+                <a class="btn btn-primary" href="{{ $homePanel }}">Ir al panel</a>
             @endauth
             @guest
-                <a class="btn btn-outline" href="/admin/login" style="margin-left:0">Iniciar sesión</a>
-                <a class="btn btn-primary" href="/admin/login">Acceder al sistema</a>
+                <a class="btn btn-outline" href="/panel/login" style="margin-left:0">Acceso de usuarios</a>
+                <a class="btn btn-primary" href="/admin/login">Administración</a>
             @endguest
         </div>
     </nav>
@@ -51,7 +55,7 @@
         <p>Inventario, compras, ventas, punto de venta con cálculo de cambio, facturación y contabilidad — todo en una sola plataforma.</p>
         <div>
             @auth
-                <a class="btn btn-primary" href="/admin/pos">Abrir punto de venta</a>
+                <a class="btn btn-primary" href="{{ $posUrl }}">Abrir punto de venta</a>
             @endauth
             @guest
                 <a class="btn btn-primary" href="/admin/login">Comenzar ahora</a>

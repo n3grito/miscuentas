@@ -20,7 +20,16 @@ class User extends Authenticatable implements FilamentUser
 
     public function canAccessPanel(Panel $panel): bool
     {
-        return (bool) ($this->is_active ?? true);
+        if (! ($this->is_active ?? true)) {
+            return false;
+        }
+
+        if ($panel->getId() === 'user') {
+            return true;
+        }
+
+        // El panel 'admin' queda reservado a la administración.
+        return $this->hasRole('SuperAdmin');
     }
 
     public function getActivitylogOptions(): LogOptions

@@ -18,7 +18,7 @@ class ThirdPartyResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-building-office-2';
 
-    protected static ?string $navigationGroup = 'Administración';
+    protected static ?string $navigationGroup = 'Terceros';
 
     protected static ?string $modelLabel = 'Tercero';
 

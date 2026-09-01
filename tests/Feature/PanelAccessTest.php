@@ -60,4 +60,25 @@ class PanelAccessTest extends TestCase
             ->get('/admin/settings')
             ->assertForbidden();
     }
+
+    public function test_plain_user_cannot_access_admin_panel(): void
+    {
+        $this->actingAs($this->plainUser)
+            ->get('/admin')
+            ->assertForbidden();
+    }
+
+    public function test_plain_user_can_access_user_panel(): void
+    {
+        $this->actingAs($this->plainUser)
+            ->get('/panel')
+            ->assertOk();
+    }
+
+    public function test_superadmin_can_access_user_panel(): void
+    {
+        $this->actingAs($this->superAdmin)
+            ->get('/panel')
+            ->assertOk();
+    }
 }
