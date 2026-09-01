@@ -98,6 +98,8 @@ php artisan config:cache
 php artisan route:cache
 php artisan view:cache
 php artisan event:cache
+# Alternativa: todo en un solo comando (sin --force, no existe en Laravel 11)
+# php artisan optimize
 ```
 
 ### 8. Configurar Scheduler (cron)
@@ -129,7 +131,7 @@ php artisan backup:run --only-db
 ```bash
 # Verificar configuración
 php artisan about
-php artisan config:cache --force
+php artisan config:cache
 php artisan route:list
 
 # Verificar permisos
@@ -153,7 +155,79 @@ ls -la storage/app/backups/
 # Verificar logs
 tail -f storage/logs/laravel.log
 cat .env  # verificar APP_DEBUG=false
-php artisan config:cache --force
+php artisan config:cache
+```
+
+### Diagnóstico automático
+Ejecuta el comando incluido que revisa clave, entorno, conexión, collation y migraciones:
+```bash
+php artisan deploy:diagnose
+```
+
+### 1. "No application encryption key has been specified"
+Falta APP_KEY o es inválida en `.env`. Genera una SIEMPRE con CUIDADO (si ya hay
+datos cifrados no debes cambiarla):
+```bash
+php artisan key:generate
+php artisan config:clear
+```
+> En un servidor hay que mantener la MISMA APP_KEY entre despliegues. Si cambia, los
+> datos cifrados (sesiones, contraseñas, tokens) dejan de descifrarse.
+
+### 2. "The --force option does not exist"
+En Laravel 11, `config:cache` y `optimize` ya NO aceptan `--force`. Usa:
+```bash
+php artisan config:cache     # sin --force
+php artisan optimize         # sin --force
+```
+`--force` solo aplica a `migrate`, `db:seed` y `schedule:run`.
+
+### 3. "Unknown collation: 'utf8mb4_0900_ai_ci'" (SQLSTATE 1273)
+Servidor MariaDB o MySQL < 8.0.16 que no conoce esa collation. Verifica con:
+```bash
+mysql -u root -p -e "SHOW VARIABLES LIKE 'version';"
+mysql -u root -p -e "SHOW COLLATION LIKE 'utf8mb4_0900_ai_ci';"
+```
+Si no aparece la collation, corrige en `.env` (la app usa por defecto utf8mb4_unicode_ci):
+```bash
+DB_CHARSET=utf8mb4
+DB_COLLATION=utf8mb4_unicode_ci
+php artisan config:clear
+```
+Si la base YA se creó con la collation equivocada, convierte las tablas:
+```bash
+mysql -u root -p miscuentas
+ALTER DATABASE miscuentas CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+SELECT CONCAT('ALTER TABLE `', TABLE_NAME, '` CONVERT TO CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;')
+FROM information_schema.TABLES WHERE TABLE_SCHEMA='miscuentas';
+```
+
+### 4. "Unknown database 'miscuentas'" (SQLSTATE 1049)
+La base no existe. Créala ANTES de migrar:
+```bash
+mysql -u root -p
+CREATE DATABASE miscuentas CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+CREATE USER 'miscuentas_user'@'127.0.0.1' IDENTIFIED BY 'CAMBIAME_por_una_fuerte';
+GRANT ALL PRIVILEGES ON miscuentas.* TO 'miscuentas_user'@'127.0.0.1';
+FLUSH PRIVILEGES;
+php artisan migrate --force
+```
+
+### 5. "'accounts.code' isn't in GROUP BY" (SQLSTATE 1055)
+MySQL/MariaDB en modo estricto (`ONLY_FULL_GROUP_BY`). La query del Balance de
+Comprobación agrupaba por `accounts.id` pero seleccionaba `accounts.*`. Ya se
+corrigió para agrupar por las columnas explícitas. Solo asegúrate de desplegar la
+última versión (`git pull` + recargar) — no se requiere tocar el servidor.
+
+### 6. "Duplicate entry '1-1'" (SQLSTATE 1062, inventario)
+El servicio de inventario ya usa `lockInventory` con creación segura y re-intento
+(movimientos concurrentes). El error lo emitió una versión ANTIGUA del código; con la
+versión actual el escenario concurrente se resuelve solo. Si ocurriera igual, revisar
+que en el servidor esté desplegada la última versión:
+```bash
+git pull
+composer install --no-dev --optimize-autoloader
+php artisan migrate --force
 ```
 
 ### Permisos denegados

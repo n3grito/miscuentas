@@ -38,13 +38,15 @@ class TrialBalance extends Page implements HasTable
     protected function getTableQuery(): Builder
     {
         return Account::query()
-            ->selectRaw('accounts.*, COALESCE(SUM(journal_entry_lines.debit), 0) as total_debits, COALESCE(SUM(journal_entry_lines.credit), 0) as total_credits')
+            ->selectRaw('accounts.id, accounts.code, accounts.name, accounts.type, accounts.parent_id, accounts.is_active, '
+                .'COALESCE(SUM(journal_entry_lines.debit), 0) as total_debits, '
+                .'COALESCE(SUM(journal_entry_lines.credit), 0) as total_credits')
             ->leftJoin('journal_entry_lines', 'journal_entry_lines.account_id', '=', 'accounts.id')
             ->leftJoin('journal_entries', function ($join) {
                 $join->on('journal_entries.id', '=', 'journal_entry_lines.journal_entry_id')
                     ->where('journal_entries.status', 'posted');
             })
-            ->groupBy('accounts.id');
+            ->groupBy('accounts.id', 'accounts.code', 'accounts.name', 'accounts.type', 'accounts.parent_id', 'accounts.is_active');
     }
 
     public function table(Table $table): Table

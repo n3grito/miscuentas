@@ -129,6 +129,34 @@ class AccountingTest extends TestCase
         $this->assertEqualsWithDelta(120.0, (float) $costEntry->lines()->where('credit', '>', 0)->sum('credit'), 0.000001);
     }
 
+    public function test_trial_balance_groups_by_explicit_account_columns(): void
+    {
+        $page = new \App\Filament\Pages\Reports\TrialBalance;
+
+        $getQuery = new \ReflectionMethod($page, 'getTableQuery');
+        $getQuery->setAccessible(true);
+
+        $query = $getQuery->invoke($page);
+        $sql = strtolower($query->toSql());
+
+        // En MySQL 8 "GROUP BY accounts.id" bastaría por dependencia funcional,
+        // pero MariaDB con ONLY_FULL_GROUP_BY rechaza accounts.*: hay que agrupar
+        // por cada columna seleccionada explícitamente.
+        $this->assertStringNotContainsString('accounts.*', $sql);
+        $this->assertStringContainsString('group by', $sql);
+
+        $this->assertMatchesRegularExpression(
+            '/group by\s+`?accounts`?\.`?id`?[,\s]/i',
+            $sql
+        );
+
+        // La consulta debe ejecutarse sin errores y devolver los totales.
+        $rows = $query->get();
+        $this->assertGreaterThan(0, $rows->count());
+        $this->assertTrue($rows->first()->offsetExists('total_debits'));
+        $this->assertTrue($rows->first()->offsetExists('total_credits'));
+    }
+
     private function createDraftEntry(float $debit, float $credit): JournalEntry
     {
         $cash = Account::where('code', JournalService::CODE_CASH)->firstOrFail();
